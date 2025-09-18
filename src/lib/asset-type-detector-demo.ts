@@ -91,3 +91,4 @@ export function runAssetTypeDetectionDemo(): void {
 
 // Uncomment to run demo in browser console
 // runAssetTypeDetectionDemo();
+

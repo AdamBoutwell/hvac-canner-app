@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, ReactNode, Dispatch, SetStateAction, useEffect } from 'react';
 import { AppState } from '@/types/state';
-import { saveProjectData, loadProjectData, loadApiKey } from '@/lib/data-persistence';
+import { saveProjectData, loadProjectData } from '@/lib/data-persistence';
 import { toast } from 'sonner';
 
 interface AppContextType extends AppState {
@@ -18,7 +18,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     currentImage: null,
     imageQueue: [],
     currentImageIndex: 0,
-    apiKey: '',
     processingStatus: { stage: 'idle', progress: 0, message: '' },
     extractedData: {}, // Store extracted data per image index
     isCustomerValidated: false, // Customer must be validated before starting
@@ -29,13 +28,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Load saved data from localStorage on component mount
   useEffect(() => {
     console.log('AppContext: Loading saved data from localStorage...');
-    
-    // Load API key
-    const savedApiKey = loadApiKey();
-    if (savedApiKey) {
-      console.log('AppContext: API key loaded from localStorage');
-      setState(prev => ({ ...prev, apiKey: savedApiKey }));
-    }
 
     // Load project data
     const savedProjectData = loadProjectData();
@@ -50,15 +42,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       console.log('AppContext: No saved project data found');
     }
   }, []);
-
-  // Save API key to localStorage whenever it changes
-  useEffect(() => {
-    if (state.apiKey) {
-      localStorage.setItem('hvac-scanner-api-key', state.apiKey);
-    } else {
-      localStorage.removeItem('hvac-scanner-api-key');
-    }
-  }, [state.apiKey]);
 
   // Save project data to localStorage whenever it changes
   useEffect(() => {

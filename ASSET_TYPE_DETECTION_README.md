@@ -145,3 +145,4 @@ When no asset type is selected, the form shows:
 6. **Save Equipment**: Add to equipment list with correct type
 
 The asset type detection feature significantly improves the user experience and data quality, making the HVAC equipment scanning process more efficient and accurate.
+

@@ -14,6 +14,7 @@ export interface EquipmentData {
   size?: string;
   mfgYear?: string;
   location?: string;
+  custId?: string;
   notes?: string;
   filterSize?: string;
   filterType?: string;

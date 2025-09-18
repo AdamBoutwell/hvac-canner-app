@@ -33,3 +33,4 @@ export function convertEquipmentToScannerData(equipmentData: EquipmentData): Sca
 export function convertMultipleEquipmentToScannerData(equipmentList: EquipmentData[]): ScannerData[] {
   return equipmentList.map(convertEquipmentToScannerData);
 }
+

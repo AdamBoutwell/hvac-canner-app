@@ -172,3 +172,4 @@ if (hasData) {
 - **Customer database**: Reuse customer information
 
 This workflow improvement ensures professional project management and complete data protection, making the HVAC Scanner App more reliable and user-friendly for equipment scanning projects.
+

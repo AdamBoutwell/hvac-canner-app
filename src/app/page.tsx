@@ -98,7 +98,7 @@ export default function Home() {
         const response = await fetch('/api/extract', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ image: base64Image, apiKey: appState.apiKey }),
+          body: JSON.stringify({ image: base64Image }),
         });
 
         clearInterval(progressInterval);
@@ -272,7 +272,7 @@ export default function Home() {
       currentImage: null,
       imageQueue: [],
       currentImageIndex: 0,
-      apiKey: appState.apiKey, // Keep API key
+      apiKey: '', // No longer needed
       processingStatus: { stage: 'idle', progress: 0, message: '' },
       extractedData: {},
       isCustomerValidated: false,
@@ -291,11 +291,10 @@ export default function Home() {
   // Debug function to check localStorage
   const handleDebugStorage = () => {
     const projectData = localStorage.getItem('hvac-scanner-project-data');
-    const apiKey = localStorage.getItem('hvac-scanner-api-key');
     
     console.log('=== DEBUG: localStorage Contents ===');
     console.log('Project Data:', projectData ? JSON.parse(projectData) : 'None');
-    console.log('API Key:', apiKey ? 'Present' : 'None');
+    console.log('API Key: Server-side (secure) - Not stored in browser');
     console.log('Current App State:', {
       customer: appState.customer,
       equipmentList: appState.equipmentList,
@@ -387,11 +386,7 @@ export default function Home() {
           </div>
           <div className="flex items-center space-x-2">
             <div className="text-sm text-gray-600">
-              {appState.apiKey ? (
-                <span className="text-green-600">✓ API Key Saved</span>
-              ) : (
-                <span className="text-orange-600">⚠ No API Key</span>
-              )}
+              <span className="text-green-600">✓ AI Processing Ready</span>
             </div>
             <Button
               variant="outline"
@@ -417,32 +412,6 @@ export default function Home() {
             >
               New Project
             </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => {
-                const key = prompt('Enter your Gemini API Key:');
-                if (key) {
-                  setState(prev => ({ ...prev, apiKey: key }));
-                  toast.success('API Key saved permanently!');
-                }
-              }}
-            >
-              {appState.apiKey ? 'Change API Key' : 'Set API Key'}
-            </Button>
-            {appState.apiKey && (
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => {
-                  setState(prev => ({ ...prev, apiKey: '' }));
-                  toast.success('API Key cleared!');
-                }}
-                className="text-red-600 hover:text-red-800"
-              >
-                Clear
-              </Button>
-            )}
           </div>
         </div>
       </header>

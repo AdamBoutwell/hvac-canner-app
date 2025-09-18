@@ -171,3 +171,4 @@ export function ImageProcessingOverlay({ isProcessing, status }: ImageProcessing
     </div>
   );
 }
+

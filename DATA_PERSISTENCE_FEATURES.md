@@ -191,3 +191,4 @@ interface PersistentProjectData {
 - **Project archiving**: Long-term project storage
 
 This data persistence system ensures professional-grade reliability for HVAC equipment scanning projects, protecting against all forms of accidental data loss while providing clear project management capabilities.
+

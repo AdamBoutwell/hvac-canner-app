@@ -12,7 +12,6 @@ export interface AppState {
   currentImage: File | null;
   imageQueue: File[];
   currentImageIndex: number;
-  apiKey: string;
   processingStatus: ProcessingStatus;
   extractedData: { [key: number]: EquipmentData }; // Store extracted data per image index
   isCustomerValidated: boolean; // Track if customer info has been entered

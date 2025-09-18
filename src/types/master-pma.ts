@@ -50,3 +50,4 @@ export interface EquipmentFeatures {
 export interface EquipmentCodes {
   [key: string]: string;
 }
+

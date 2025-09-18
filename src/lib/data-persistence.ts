@@ -2,8 +2,7 @@ import { AppState } from '@/types/state';
 import { EquipmentData } from '@/types/equipment';
 
 const STORAGE_KEYS = {
-  PROJECT_DATA: 'hvac-scanner-project-data',
-  API_KEY: 'hvac-scanner-api-key'
+  PROJECT_DATA: 'hvac-scanner-project-data'
 };
 
 export interface PersistentProjectData {
@@ -110,36 +109,3 @@ export function getProjectInfo(): {
   }
 }
 
-/**
- * Save API key to localStorage
- */
-export function saveApiKey(apiKey: string): void {
-  try {
-    localStorage.setItem(STORAGE_KEYS.API_KEY, apiKey);
-  } catch (error) {
-    console.error('Failed to save API key:', error);
-  }
-}
-
-/**
- * Load API key from localStorage
- */
-export function loadApiKey(): string | null {
-  try {
-    return localStorage.getItem(STORAGE_KEYS.API_KEY);
-  } catch (error) {
-    console.error('Failed to load API key:', error);
-    return null;
-  }
-}
-
-/**
- * Clear API key from localStorage
- */
-export function clearApiKey(): void {
-  try {
-    localStorage.removeItem(STORAGE_KEYS.API_KEY);
-  } catch (error) {
-    console.error('Failed to clear API key:', error);
-  }
-}

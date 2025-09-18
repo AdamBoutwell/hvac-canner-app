@@ -3,7 +3,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export async function POST(request: NextRequest) {
   try {
-    const { image, apiKey } = await request.json();
+    const { image } = await request.json();
 
     if (!image) {
       return NextResponse.json(
@@ -22,7 +22,8 @@ export async function POST(request: NextRequest) {
       serialNumber: '',
       size: '',
       mfgYear: '',
-      location: '',
+      location: '', // User-defined field - not filled by AI
+      custId: '', // User-defined field - not filled by AI
       notes: '',
       filterSize: '',
       filterType: '',
@@ -32,6 +33,10 @@ export async function POST(request: NextRequest) {
       maintenanceInterval: ''
     };
 
+    // Get API key from Firebase secrets
+    const apiKey = process.env.GOOGLE_AI_API_KEY;
+    console.log('API Key available:', apiKey ? 'Yes' : 'No');
+    
     if (apiKey) {
       try {
         const genAI = new GoogleGenerativeAI(apiKey);
@@ -93,7 +98,6 @@ Return ONLY a JSON object with these exact fields. Extract specific values, not 
   "serialNumber": "serial number", 
   "size": "capacity with units (e.g., '5 ton', '24000 BTU')",
   "mfgYear": "manufacturing year",
-  "location": "installation location if mentioned",
   "voltage": "nominal voltage (e.g., '460V', '208V')",
   "refrigerant": "refrigerant type (e.g., 'R-410A', 'R-407C')",
   "filterSize": "filter dimensions if visible",
@@ -103,6 +107,8 @@ Return ONLY a JSON object with these exact fields. Extract specific values, not 
   "maintenanceInterval": "service interval if mentioned",
   "notes": "any additional specifications not captured above"
 }
+
+NOTE: Do NOT extract location or customer ID - these are user-defined fields that should remain empty.
 
 Be precise and extract actual values, not descriptions. If a field is not visible, use empty string "".`;
 
@@ -307,6 +313,7 @@ async function performBasicExtraction(_image: string) {
       size: '',
       mfgYear: '',
       location: '',
+      custId: '',
       voltage: '',
       refrigerant: '',
       filterSize: '',

@@ -22,6 +22,9 @@ interface EquipmentFormEnhancedProps {
 
 export default function EquipmentFormEnhanced({ data, onSave }: EquipmentFormEnhancedProps) {
   const { setState, equipmentList } = useAppContext();
+  
+  // Debug: Log when component loads
+  console.log('EquipmentFormEnhanced loaded with custId field');
   const [formData, setFormData] = useState<EquipmentData>({
     qty: 1,
     assetType: '',
@@ -31,6 +34,7 @@ export default function EquipmentFormEnhanced({ data, onSave }: EquipmentFormEnh
     size: '',
     mfgYear: '',
     location: '',
+    custId: '',
     notes: '',
     filterSize: '',
     filterType: '',
@@ -311,7 +315,7 @@ export default function EquipmentFormEnhanced({ data, onSave }: EquipmentFormEnh
       {/* Basic Equipment Information */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm">Basic Equipment Information</CardTitle>
+          <CardTitle className="text-sm">Basic Equipment Information - UPDATED VERSION</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
@@ -475,12 +479,23 @@ export default function EquipmentFormEnhanced({ data, onSave }: EquipmentFormEnh
               />
             </div>
             <div>
-              <label className="text-sm font-medium">Location</label>
+              <label className="text-sm font-medium">Location (User Defined)</label>
               <Input
                 value={formData.location || ''}
                 onChange={(e) => handleInputChange('location', e.target.value)}
                 placeholder="e.g., Rooftop, Basement, Floor 1"
-                className="mt-1"
+                className="mt-1 bg-yellow-50 border-yellow-300 focus:border-yellow-500 focus:ring-yellow-500"
+                style={{backgroundColor: '#fef3c7', borderColor: '#f59e0b'}}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Cust ID (User Defined)</label>
+              <Input
+                value={formData.custId || ''}
+                onChange={(e) => handleInputChange('custId', e.target.value)}
+                placeholder="e.g., CUST-001, ABC-123"
+                className="mt-1 bg-yellow-50 border-yellow-300 focus:border-yellow-500 focus:ring-yellow-500"
+                style={{backgroundColor: '#fef3c7', borderColor: '#f59e0b'}}
               />
             </div>
           </div>

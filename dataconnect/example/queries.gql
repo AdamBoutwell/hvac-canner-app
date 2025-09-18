@@ -1,0 +1,251 @@
+# HVAC Equipment Management Queries
+
+# Get current user's profile
+query GetCurrentUser @auth(level: USER) {
+  user(key: { id_expr: "auth.uid" }) {
+    id
+    email
+    name
+    company
+  }
+}
+
+# List all customers for the current user
+query ListCustomers @auth(level: USER) {
+  customers(
+    where: { createdBy: { id: { eq_expr: "auth.uid" } } }
+    orderBy: { createdAt: DESC }
+  ) {
+    id
+    name
+    location
+    address
+    contactPerson
+    phone
+    email
+    createdAt
+    equipmentCount: equipments_on_customer {
+      id
+    }
+  }
+}
+
+# Get customer by ID with their equipment (only if user owns the customer)
+query GetCustomerById($id: UUID!) @auth(level: USER, insecureReason: "User can only access customers they created") {
+  customer(id: $id) {
+    id
+    name
+    location
+    address
+    contactPerson
+    phone
+    email
+    createdAt
+    equipment: equipments_on_customer {
+      id
+      qty
+      assetType
+      manufacturer
+      model
+      serialNumber
+      size
+      mfgYear
+      location
+      notes
+      voltage
+      refrigerant
+      maintenanceInterval
+      filterSize
+      filterType
+      filterMerv
+      filterQuantity
+      beltSize
+      beltQuantity
+      requiresFilterChange
+      requiresCoilCleaning
+      requiresBeltReplacement
+      createdAt
+      updatedAt
+    }
+  }
+}
+
+# List equipment for a specific customer (only if user owns the customer)
+query ListEquipmentByCustomer($customerId: UUID!) @auth(level: USER, insecureReason: "User can only access equipment for customers they created") {
+  equipments(
+    where: { 
+      _and: [
+        { customer: { id: { eq: $customerId } } }
+        { customer: { createdBy: { id: { eq_expr: "auth.uid" } } } }
+      ]
+    }
+    orderBy: { createdAt: DESC }
+  ) {
+    id
+    qty
+    assetType
+    manufacturer
+    model
+    serialNumber
+    size
+    mfgYear
+    location
+    notes
+    voltage
+    refrigerant
+    maintenanceInterval
+    filterSize
+    filterType
+    filterMerv
+    filterQuantity
+    beltSize
+    beltQuantity
+    requiresFilterChange
+    requiresCoilCleaning
+    requiresBeltReplacement
+    createdAt
+    updatedAt
+    customer {
+      id
+      name
+      location
+    }
+    manualLinks: manualLinks_on_equipment {
+      id
+      title
+      url
+      description
+      source
+    }
+    maintenanceRecords: maintenanceRecords_on_equipment {
+      id
+      maintenanceType
+      description
+      performedDate
+      nextDueDate
+      technician
+      status
+    }
+  }
+}
+
+# Get equipment by ID with full details (only if user owns the equipment)
+query GetEquipmentById($id: UUID!) @auth(level: USER, insecureReason: "User can only access equipment they created") {
+  equipment(id: $id) {
+    id
+    qty
+    assetType
+    manufacturer
+    model
+    serialNumber
+    size
+    mfgYear
+    location
+    notes
+    voltage
+    refrigerant
+    maintenanceInterval
+    filterSize
+    filterType
+    filterMerv
+    filterQuantity
+    beltSize
+    beltQuantity
+    requiresFilterChange
+    requiresCoilCleaning
+    requiresBeltReplacement
+    createdAt
+    updatedAt
+    customer {
+      id
+      name
+      location
+    }
+    manualLinks: manualLinks_on_equipment {
+      id
+      title
+      url
+      description
+      source
+    }
+    maintenanceRecords: maintenanceRecords_on_equipment {
+      id
+      maintenanceType
+      description
+      notes
+      performedDate
+      nextDueDate
+      technician
+      serviceHours
+      partsUsed
+      cost
+      status
+      createdAt
+    }
+  }
+}
+
+# Search equipment by various criteria (only user's own equipment)
+query SearchEquipment($assetType: String, $manufacturer: String, $location: String) @auth(level: USER, insecureReason: "User can only search equipment they created") {
+  equipments(
+    where: {
+      _and: [
+        { assetType: { contains: $assetType } }
+        { manufacturer: { contains: $manufacturer } }
+        { location: { contains: $location } }
+        { createdBy: { id: { eq_expr: "auth.uid" } } }
+      ]
+    }
+    orderBy: { createdAt: DESC }
+  ) {
+    id
+    qty
+    assetType
+    manufacturer
+    model
+    serialNumber
+    size
+    location
+    customer {
+      id
+      name
+      location
+    }
+  }
+}
+
+# Get maintenance records for equipment (only if user owns the equipment)
+query GetMaintenanceRecords($equipmentId: UUID!) @auth(level: USER, insecureReason: "User can only access maintenance records for equipment they created") {
+  maintenanceRecords(
+    where: { 
+      _and: [
+        { equipment: { id: { eq: $equipmentId } } }
+        { equipment: { createdBy: { id: { eq_expr: "auth.uid" } } } }
+      ]
+    }
+    orderBy: { performedDate: DESC }
+  ) {
+    id
+    maintenanceType
+    description
+    notes
+    performedDate
+    nextDueDate
+    technician
+    serviceHours
+    partsUsed
+    cost
+    status
+    createdAt
+    equipment {
+      id
+      assetType
+      manufacturer
+      model
+    }
+    user {
+      id
+      name
+    }
+  }
+}

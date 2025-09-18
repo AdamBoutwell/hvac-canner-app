@@ -1,0 +1,225 @@
+# HVAC Equipment Management Mutations
+
+# Upsert (update or insert) a user's profile based on their auth.uid
+mutation UpsertUser($email: String!, $name: String!, $company: String) @auth(level: USER) {
+  # The "auth.uid" server value ensures that users can only register their own user.
+  user_upsert(data: { 
+    id_expr: "auth.uid", 
+    email: $email, 
+    name: $name, 
+    company: $company 
+  })
+}
+
+# Create a new customer
+mutation CreateCustomer($name: String!, $location: String!, $address: String, $contactPerson: String, $phone: String, $email: String) @auth(level: USER) {
+  customer_insert(data: {
+    name: $name,
+    location: $location,
+    address: $address,
+    contactPerson: $contactPerson,
+    phone: $phone,
+    email: $email,
+    createdBy: { id_expr: "auth.uid" }
+  })
+}
+
+# Update customer information (only if user owns the customer)
+mutation UpdateCustomer($id: UUID!, $name: String, $location: String, $address: String, $contactPerson: String, $phone: String, $email: String) @auth(level: USER, insecureReason: "User can only update customers they created") {
+  customer_update(
+    key: { id: $id }
+    data: {
+      name: $name,
+      location: $location,
+      address: $address,
+      contactPerson: $contactPerson,
+      phone: $phone,
+      email: $email,
+      updatedAt_expr: "request.time"
+    }
+  )
+}
+
+# Create new equipment (only if user owns the customer)
+mutation CreateEquipment(
+  $customerId: UUID!,
+  $qty: Int,
+  $assetType: String!,
+  $manufacturer: String,
+  $model: String,
+  $serialNumber: String,
+  $size: String,
+  $mfgYear: String,
+  $location: String,
+  $notes: String,
+  $voltage: String,
+  $refrigerant: String,
+  $maintenanceInterval: String,
+  $filterSize: String,
+  $filterType: String,
+  $filterMerv: String,
+  $filterQuantity: String,
+  $beltSize: String,
+  $beltQuantity: String,
+  $requiresFilterChange: Boolean,
+  $requiresCoilCleaning: Boolean,
+  $requiresBeltReplacement: Boolean
+) @auth(level: USER) {
+  equipment_insert(data: {
+    customer: { id: $customerId },
+    qty: $qty,
+    assetType: $assetType,
+    manufacturer: $manufacturer,
+    model: $model,
+    serialNumber: $serialNumber,
+    size: $size,
+    mfgYear: $mfgYear,
+    location: $location,
+    notes: $notes,
+    voltage: $voltage,
+    refrigerant: $refrigerant,
+    maintenanceInterval: $maintenanceInterval,
+    filterSize: $filterSize,
+    filterType: $filterType,
+    filterMerv: $filterMerv,
+    filterQuantity: $filterQuantity,
+    beltSize: $beltSize,
+    beltQuantity: $beltQuantity,
+    requiresFilterChange: $requiresFilterChange,
+    requiresCoilCleaning: $requiresCoilCleaning,
+    requiresBeltReplacement: $requiresBeltReplacement,
+    createdBy: { id_expr: "auth.uid" }
+  })
+}
+
+# Update equipment information (only if user owns the equipment)
+mutation UpdateEquipment(
+  $id: UUID!,
+  $qty: Int,
+  $assetType: String,
+  $manufacturer: String,
+  $model: String,
+  $serialNumber: String,
+  $size: String,
+  $mfgYear: String,
+  $location: String,
+  $notes: String,
+  $voltage: String,
+  $refrigerant: String,
+  $maintenanceInterval: String,
+  $filterSize: String,
+  $filterType: String,
+  $filterMerv: String,
+  $filterQuantity: String,
+  $beltSize: String,
+  $beltQuantity: String,
+  $requiresFilterChange: Boolean,
+  $requiresCoilCleaning: Boolean,
+  $requiresBeltReplacement: Boolean
+) @auth(level: USER, insecureReason: "User can only update equipment they created") {
+  equipment_update(
+    key: { id: $id }
+    data: {
+      qty: $qty,
+      assetType: $assetType,
+      manufacturer: $manufacturer,
+      model: $model,
+      serialNumber: $serialNumber,
+      size: $size,
+      mfgYear: $mfgYear,
+      location: $location,
+      notes: $notes,
+      voltage: $voltage,
+      refrigerant: $refrigerant,
+      maintenanceInterval: $maintenanceInterval,
+      filterSize: $filterSize,
+      filterType: $filterType,
+      filterMerv: $filterMerv,
+      filterQuantity: $filterQuantity,
+      beltSize: $beltSize,
+      beltQuantity: $beltQuantity,
+      requiresFilterChange: $requiresFilterChange,
+      requiresCoilCleaning: $requiresCoilCleaning,
+      requiresBeltReplacement: $requiresBeltReplacement,
+      updatedAt_expr: "request.time"
+    }
+  )
+}
+
+# Delete equipment (only if user owns the equipment)
+mutation DeleteEquipment($id: UUID!) @auth(level: USER, insecureReason: "User can only delete equipment they created") {
+  equipment_delete(key: { id: $id })
+}
+
+# Add manual link to equipment (only if user owns the equipment)
+mutation AddManualLink($equipmentId: UUID!, $title: String!, $url: String!, $description: String, $source: String) @auth(level: USER, insecureReason: "User can only add links to equipment they created") {
+  manualLink_insert(data: {
+    equipment: { id: $equipmentId },
+    title: $title,
+    url: $url,
+    description: $description,
+    source: $source
+  })
+}
+
+# Create maintenance record (only if user owns the equipment)
+mutation CreateMaintenanceRecord(
+  $equipmentId: UUID!,
+  $maintenanceType: String!,
+  $description: String,
+  $notes: String,
+  $performedDate: Date,
+  $nextDueDate: Date,
+  $technician: String,
+  $serviceHours: Float,
+  $partsUsed: String,
+  $cost: Float,
+  $status: String
+) @auth(level: USER, insecureReason: "User can only create maintenance records for equipment they created") {
+  maintenanceRecord_insert(data: {
+    equipment: { id: $equipmentId },
+    user: { id_expr: "auth.uid" },
+    maintenanceType: $maintenanceType,
+    description: $description,
+    notes: $notes,
+    performedDate: $performedDate,
+    nextDueDate: $nextDueDate,
+    technician: $technician,
+    serviceHours: $serviceHours,
+    partsUsed: $partsUsed,
+    cost: $cost,
+    status: $status
+  })
+}
+
+# Update maintenance record (only if user owns the equipment)
+mutation UpdateMaintenanceRecord(
+  $id: UUID!,
+  $maintenanceType: String,
+  $description: String,
+  $notes: String,
+  $performedDate: Date,
+  $nextDueDate: Date,
+  $technician: String,
+  $serviceHours: Float,
+  $partsUsed: String,
+  $cost: Float,
+  $status: String
+) @auth(level: USER, insecureReason: "User can only update maintenance records for equipment they created") {
+  maintenanceRecord_update(
+    key: { id: $id }
+    data: {
+      maintenanceType: $maintenanceType,
+      description: $description,
+      notes: $notes,
+      performedDate: $performedDate,
+      nextDueDate: $nextDueDate,
+      technician: $technician,
+      serviceHours: $serviceHours,
+      partsUsed: $partsUsed,
+      cost: $cost,
+      status: $status,
+      updatedAt_expr: "request.time"
+    }
+  )
+}
