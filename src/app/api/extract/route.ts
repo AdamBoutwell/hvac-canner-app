@@ -135,6 +135,9 @@ NOTE: Do NOT extract location or customer ID - these are user-defined fields tha
 
 Be precise and extract actual values from the nameplate. If a field is not visible, use empty string "". Pay special attention to TRANE XR series equipment which are typically packaged heat pumps.`;
 
+        console.log('Calling Gemini API with model:', model);
+        console.log('Base64 data length:', base64Data.length);
+        
         const result = await model.generateContent([
           prompt,
           {
@@ -145,6 +148,11 @@ Be precise and extract actual values from the nameplate. If a field is not visib
           }
         ]).catch(async (apiError) => {
           console.error('Gemini API error:', apiError);
+          console.error('API Error details:', {
+            message: apiError.message,
+            status: apiError.status,
+            code: apiError.code
+          });
           throw apiError;
         });
 
@@ -181,6 +189,11 @@ Be precise and extract actual values from the nameplate. If a field is not visib
         }
       } catch (geminiError) {
         console.error('Gemini API error:', geminiError);
+        console.error('Gemini Error details:', {
+          message: geminiError instanceof Error ? geminiError.message : 'Unknown error',
+          status: geminiError && typeof geminiError === 'object' && 'status' in geminiError ? geminiError.status : 'No status',
+          code: geminiError && typeof geminiError === 'object' && 'code' in geminiError ? geminiError.code : 'No code'
+        });
         
         // Check if it's a service overload error
         if (geminiError && typeof geminiError === 'object' && 'status' in geminiError && geminiError.status === 503) {
