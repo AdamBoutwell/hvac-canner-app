@@ -15,6 +15,7 @@ import { MasterPMAExport } from "@/components/MasterPMAExport/MasterPMAExport";
 import { CustomerValidation } from "@/components/CustomerValidation/CustomerValidation";
 import { UnsavedEquipmentDialog } from "@/components/UnsavedEquipmentDialog/UnsavedEquipmentDialog";
 import { NewProjectDialog } from "@/components/NewProjectDialog/NewProjectDialog";
+import CloudSave from "@/components/CloudSave/CloudSave";
 import { getProjectInfo, clearProjectData, saveProjectData } from "@/lib/data-persistence";
 import { LoadingIndicator, ImageProcessingOverlay } from "@/components/ui/loading-indicator";
 
@@ -508,6 +509,21 @@ export default function Home() {
             <MasterPMAExport 
               equipmentList={appState.equipmentList} 
               disabled={appState.equipmentList.length === 0}
+            />
+          </div>
+          
+          {/* Cloud Save Section */}
+          <div className="mt-6">
+            <CloudSave 
+              equipmentList={appState.equipmentList}
+              customer={appState.customer}
+              photos={appState.imageQueue.map((file, index) => ({
+                id: `photo_${index}`,
+                name: file.name,
+                data: '', // Will be converted to base64 when saving
+                equipmentId: appState.extractedData[index]?.id,
+                file: file // Pass the actual File object
+              }))}
             />
           </div>
         </div>
