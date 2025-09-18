@@ -36,7 +36,7 @@ export default function CloudSave({ equipmentList, customer, photos }: CloudSave
   // Auto-save functionality
   useEffect(() => {
     const autoSave = async () => {
-      if (!state.isCustomerValidated || equipmentList.length === 0) {
+      if (!state?.isCustomerValidated || equipmentList.length === 0) {
         return;
       }
 
@@ -56,7 +56,7 @@ export default function CloudSave({ equipmentList, customer, photos }: CloudSave
     // Debounce auto-save to avoid too frequent saves
     const timeoutId = setTimeout(autoSave, 2000);
     return () => clearTimeout(timeoutId);
-  }, [equipmentList, customer, state.isCustomerValidated]);
+  }, [equipmentList, customer, state?.isCustomerValidated]);
 
   const saveProjectToCloud = async () => {
     if (!customer.name || !customer.location) {
