@@ -138,11 +138,21 @@ const EQUIPMENT_PATTERNS: EquipmentPattern[] = [
     assetType: "Packaged Heat Pump-AC (All)",
     patterns: {
       manufacturer: ["carrier", "trane", "york", "daikin", "mitsubishi", "lennox"],
-      model: ["heat pump", "hspf", "seer", "packaged"],
-      keywords: ["heat pump", "hspf", "seer", "heating and cooling", "packaged"],
+      model: ["heat pump", "hspf", "seer", "packaged", "xr", "4twr"],
+      keywords: ["heat pump", "hspf", "seer", "heating and cooling", "packaged", "xr"],
       size: ["ton", "btu", "btuh"]
     },
     confidence: 0.9
+  },
+  {
+    assetType: "Packaged Heat Pump-AC (All)",
+    patterns: {
+      manufacturer: ["trane"],
+      model: ["xr", "4twr"],
+      keywords: ["trane xr", "xr series", "4twr"],
+      size: ["ton", "btu", "btuh"]
+    },
+    confidence: 0.95
   },
   {
     assetType: "Heat Pump",

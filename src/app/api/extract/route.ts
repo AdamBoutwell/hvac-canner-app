@@ -34,8 +34,9 @@ export async function POST(request: NextRequest) {
     };
 
     // Get API key from Firebase secrets
-    const apiKey = process.env.GOOGLE_AI_API_KEY;
+    const apiKey = process.env.GOOGLE_AI_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_AI_API_KEY;
     console.log('API Key available:', apiKey ? 'Yes' : 'No');
+    console.log('API Key length:', apiKey ? apiKey.length : 0);
     
     if (apiKey) {
       try {
@@ -71,21 +72,27 @@ export async function POST(request: NextRequest) {
 
         const base64Data = image.replace(/^data:image\/\w+;base64,/, '');
         
-        const prompt = `Analyze this HVAC equipment nameplate image and extract information into specific fields. Look for:
+        const prompt = `Analyze this HVAC equipment nameplate image and extract information into specific fields. Look carefully for:
 
 1. BASIC INFORMATION:
-   - Manufacturer name
-   - Model number  
-   - Serial number
-   - Manufacturing date/year
+   - Manufacturer name (e.g., TRANE, Carrier, York)
+   - Model number (e.g., 4TWR5042N1000AA)
+   - Serial number (e.g., 24243MR4KF)
+   - Manufacturing date/year (e.g., MFR DATE: 6/2024)
 
 2. EQUIPMENT SPECIFICATIONS:
-   - Equipment type (Air Handler, Condenser, Heat Pump, Furnace, Chiller, etc.)
+   - Equipment type (Air Handler, Condenser, Heat Pump, Furnace, Chiller, Packaged Unit, etc.)
    - Capacity/size (tons, BTU, kW, HP)
-   - Voltage specifications (nominal voltage)
-   - Refrigerant type and charge amounts
+   - Voltage specifications (e.g., VOLTS: 208-230)
+   - Refrigerant type and charge amounts (e.g., HFC: 410A, 10LBS 05 OZ)
 
-3. FILTER & MAINTENANCE:
+3. ELECTRICAL SPECIFICATIONS:
+   - Minimum circuit ampacity (e.g., MINIMUM CIRCUIT AMPACITY: 24.0 AMPS)
+   - Overcurrent protective device (e.g., OVERCURRENT PROTECTIVE DEVICE: 40)
+   - Compressor motor specs (e.g., COMPR. MOT.: 16.7 RLA)
+   - Outdoor motor specs (e.g., O.D. MOT.: 2.80 FLA)
+
+4. FILTER & MAINTENANCE:
    - Filter specifications if visible
    - Maintenance requirements
    - Service intervals
@@ -98,19 +105,19 @@ Return ONLY a JSON object with these exact fields. Extract specific values, not 
   "serialNumber": "serial number", 
   "size": "capacity with units (e.g., '5 ton', '24000 BTU')",
   "mfgYear": "manufacturing year",
-  "voltage": "nominal voltage (e.g., '460V', '208V')",
+  "voltage": "nominal voltage (e.g., '208-230V', '460V')",
   "refrigerant": "refrigerant type (e.g., 'R-410A', 'R-407C')",
   "filterSize": "filter dimensions if visible",
   "filterType": "filter type if visible", 
   "filterMerv": "MERV rating if visible",
   "filterQuantity": "number of filters needed if visible",
   "maintenanceInterval": "service interval if mentioned",
-  "notes": "any additional specifications not captured above"
+  "notes": "any additional specifications not captured above (include electrical specs, certifications like UL US LISTED, AHRI CERTIFIED)"
 }
 
 NOTE: Do NOT extract location or customer ID - these are user-defined fields that should remain empty.
 
-Be precise and extract actual values, not descriptions. If a field is not visible, use empty string "".`;
+Be precise and extract actual values from the nameplate. If a field is not visible, use empty string "". Pay special attention to TRANE XR series equipment which are typically packaged heat pumps.`;
 
         const result = await model.generateContent([
           prompt,

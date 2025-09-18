@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
     // your project has type errors.
     ignoreBuildErrors: true,
   },
+  env: {
+    GOOGLE_AI_API_KEY: process.env.GOOGLE_AI_API_KEY,
+  },
 };
 
 export default nextConfig;
