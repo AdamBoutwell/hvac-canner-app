@@ -34,9 +34,17 @@ export async function POST(request: NextRequest) {
     };
 
     // Get API key from Firebase secrets
-    const apiKey = process.env.GOOGLE_AI_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_AI_API_KEY;
+    let apiKey = process.env.GOOGLE_AI_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_AI_API_KEY;
+    
+    // Temporary hardcoded API key for testing
+    if (!apiKey) {
+      apiKey = 'AIzaSyCwtsXBc-QM73H6ZGxsVdvS1i2q8UuRb7c';
+      console.log('Using hardcoded API key for testing');
+    }
+    
     console.log('API Key available:', apiKey ? 'Yes' : 'No');
     console.log('API Key length:', apiKey ? apiKey.length : 0);
+    console.log('All environment variables:', Object.keys(process.env).filter(key => key.includes('GOOGLE') || key.includes('AI')));
     
     if (apiKey) {
       try {
