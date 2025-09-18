@@ -1,13 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { EquipmentData, Customer } from '@/types/equipment';
 import { useAppContext } from '@/contexts/AppContext';
 import { toast } from 'sonner';
-import { Cloud, Save, FolderOpen, Eye } from 'lucide-react';
+import { Cloud, FolderOpen, Eye, CheckCircle } from 'lucide-react';
 
 interface CloudSaveProps {
   equipmentList: EquipmentData[];
@@ -23,7 +22,6 @@ interface CloudSaveProps {
 
 export default function CloudSave({ equipmentList, customer, photos }: CloudSaveProps) {
   const { state } = useAppContext();
-  const [projectName, setProjectName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [projects, setProjects] = useState<any[]>([]);
@@ -32,21 +30,41 @@ export default function CloudSave({ equipmentList, customer, photos }: CloudSave
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
   const [selectedProject, setSelectedProject] = useState<any>(null);
+  const [lastAutoSaved, setLastAutoSaved] = useState<string | null>(null);
+  const [isAutoSaving, setIsAutoSaving] = useState(false);
 
-  const handleSaveToCloud = async () => {
-    if (!projectName.trim()) {
-      toast.error('Please enter a project name');
+  // Auto-save functionality
+  useEffect(() => {
+    const autoSave = async () => {
+      if (!state.isCustomerValidated || equipmentList.length === 0) {
+        return;
+      }
+
+      // Only auto-save if we have equipment and customer data
+      if (equipmentList.length > 0 && customer.name && customer.location) {
+        setIsAutoSaving(true);
+        try {
+          await saveProjectToCloud();
+        } catch (error) {
+          console.error('Auto-save failed:', error);
+        } finally {
+          setIsAutoSaving(false);
+        }
+      }
+    };
+
+    // Debounce auto-save to avoid too frequent saves
+    const timeoutId = setTimeout(autoSave, 2000);
+    return () => clearTimeout(timeoutId);
+  }, [equipmentList, customer, state.isCustomerValidated]);
+
+  const saveProjectToCloud = async () => {
+    if (!customer.name || !customer.location) {
       return;
     }
 
-    if (equipmentList.length === 0) {
-      toast.error('No equipment to save');
-      return;
-    }
-
-    setIsSaving(true);
-    toast.info('Saving project to cloud storage...');
-
+    const projectName = `${customer.name} - ${customer.location}`;
+    
     try {
       // Convert photos to base64
       const photosWithData = await Promise.all(
@@ -54,7 +72,7 @@ export default function CloudSave({ equipmentList, customer, photos }: CloudSave
           if (photo.data) {
             return photo; // Already has base64 data
           }
-          
+
           // Convert file to base64 if it's a File object
           if (photo.file) {
             return new Promise<typeof photo>((resolve) => {
@@ -70,7 +88,7 @@ export default function CloudSave({ equipmentList, customer, photos }: CloudSave
               reader.readAsDataURL(photo.file);
             });
           }
-          
+
           return photo;
         })
       );
@@ -93,15 +111,18 @@ export default function CloudSave({ equipmentList, customer, photos }: CloudSave
       }
 
       const result = await response.json();
+      setLastAutoSaved(new Date().toLocaleString());
       
-      toast.success(result.message);
-      setProjectName(''); // Clear the project name after successful save
-      
+      // Only show toast for manual saves, not auto-saves
+      if (!isAutoSaving) {
+        toast.success(result.message);
+      }
+
     } catch (error) {
       console.error('Error saving project:', error);
-      toast.error('Failed to save project to cloud storage');
-    } finally {
-      setIsSaving(false);
+      if (!isAutoSaving) {
+        toast.error('Failed to save project to cloud storage');
+      }
     }
   };
 
@@ -154,56 +175,34 @@ export default function CloudSave({ equipmentList, customer, photos }: CloudSave
 
   return (
     <div className="space-y-4">
-      {/* Save to Cloud Section */}
+      {/* Auto-save Status */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-sm flex items-center gap-2">
             <Cloud className="h-4 w-4" />
-            Save Project to Cloud Storage
+            Cloud Auto-Save
+            {isAutoSaving && (
+              <div className="ml-auto flex items-center gap-2 text-xs text-blue-600">
+                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
+                Saving...
+              </div>
+            )}
+            {lastAutoSaved && !isAutoSaving && (
+              <div className="ml-auto flex items-center gap-2 text-xs text-green-600">
+                <CheckCircle className="h-3 w-3" />
+                Saved {lastAutoSaved}
+              </div>
+            )}
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <label className="text-sm font-medium">Project Name *</label>
-            <Input
-              value={projectName}
-              onChange={(e) => setProjectName(e.target.value)}
-              placeholder="e.g., Office Building HVAC Survey, Warehouse Equipment Audit"
-              className="mt-1"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              This will create a folder with all equipment data and photos
-            </p>
+        <CardContent>
+          <div className="text-sm text-gray-600">
+            <p>Projects are automatically saved to the cloud as you add equipment.</p>
+            <p className="mt-1">Project Name: <strong>{customer.name} - {customer.location}</strong></p>
+            {equipmentList.length > 0 && (
+              <p className="mt-1">Equipment Items: <strong>{equipmentList.length}</strong></p>
+            )}
           </div>
-
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <span className="font-medium">Equipment Items:</span>
-              <span className="ml-2 text-blue-600">{equipmentList.length}</span>
-            </div>
-            <div>
-              <span className="font-medium">Photos:</span>
-              <span className="ml-2 text-green-600">{photos.length}</span>
-            </div>
-            <div>
-              <span className="font-medium">Customer:</span>
-              <span className="ml-2 text-gray-600">{customer.name || 'Not specified'}</span>
-            </div>
-            <div>
-              <span className="font-medium">Location:</span>
-              <span className="ml-2 text-gray-600">{customer.location || 'Not specified'}</span>
-            </div>
-          </div>
-
-          <Button 
-            onClick={handleSaveToCloud}
-            disabled={isSaving || !projectName.trim() || equipmentList.length === 0}
-            className="w-full"
-            size="lg"
-          >
-            <Save className="h-4 w-4 mr-2" />
-            {isSaving ? 'Saving to Cloud...' : 'Save Project to Cloud'}
-          </Button>
         </CardContent>
       </Card>
 
@@ -370,9 +369,9 @@ export default function CloudSave({ equipmentList, customer, photos }: CloudSave
               </div>
 
               {/* Photos */}
-              {selectedProject.photoUrls && selectedProject.photoUrls.length > 0 && (
-                <div>
-                  <h4 className="font-semibold mb-2">Photos ({selectedProject.photoCount || 0})</h4>
+              <div>
+                <h4 className="font-semibold mb-2">Photos ({selectedProject.photoCount || selectedProject.photoUrls?.length || 0})</h4>
+                {selectedProject.photoUrls && selectedProject.photoUrls.length > 0 ? (
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {selectedProject.photoUrls.map((url: string, index: number) => (
                       <div key={index} className="relative">
@@ -384,8 +383,10 @@ export default function CloudSave({ equipmentList, customer, photos }: CloudSave
                       </div>
                     ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <p className="text-gray-500 text-sm">No photos available for this project.</p>
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>
