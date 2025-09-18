@@ -46,6 +46,14 @@ export async function POST(request: NextRequest) {
     console.log('API Key length:', apiKey ? apiKey.length : 0);
     console.log('All environment variables:', Object.keys(process.env).filter(key => key.includes('GOOGLE') || key.includes('AI')));
     
+    // Add debug info to response
+    const debugInfo = {
+      apiKeyAvailable: apiKey ? 'Yes' : 'No',
+      apiKeyLength: apiKey ? apiKey.length : 0,
+      envVars: Object.keys(process.env).filter(key => key.includes('GOOGLE') || key.includes('AI')),
+      usingHardcoded: !process.env.GOOGLE_AI_API_KEY && !process.env.NEXT_PUBLIC_GOOGLE_AI_API_KEY
+    };
+    
     if (apiKey) {
       try {
         const genAI = new GoogleGenerativeAI(apiKey);
@@ -186,7 +194,7 @@ Be precise and extract actual values from the nameplate. If a field is not visib
     }
 
     console.log('Returning enhanced extracted data:', extractedData);
-    return NextResponse.json(extractedData);
+    return NextResponse.json({ ...extractedData, debugInfo });
 
   } catch (error) {
     console.error('Extraction error:', error);
@@ -216,7 +224,7 @@ Be precise and extract actual values from the nameplate. If a field is not visib
       notes: 'Extraction failed - please manually enter equipment data'
     };
     
-    return NextResponse.json(fallbackData);
+    return NextResponse.json({ ...fallbackData, debugInfo });
   }
 }
 
