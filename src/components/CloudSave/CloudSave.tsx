@@ -28,6 +28,10 @@ export default function CloudSave({ equipmentList, customer, photos }: CloudSave
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [projects, setProjects] = useState<any[]>([]);
   const [isLoadingProjects, setIsLoadingProjects] = useState(false);
+  const [adminPassword, setAdminPassword] = useState('');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<any>(null);
 
   const handleSaveToCloud = async () => {
     if (!projectName.trim()) {
@@ -98,6 +102,26 @@ export default function CloudSave({ equipmentList, customer, photos }: CloudSave
       toast.error('Failed to save project to cloud storage');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleAdminPanelClick = () => {
+    if (!isAuthenticated) {
+      setShowPasswordPrompt(true);
+      return;
+    }
+    setShowAdminPanel(!showAdminPanel);
+  };
+
+  const handlePasswordSubmit = () => {
+    if (adminPassword === 'admin123') {
+      setIsAuthenticated(true);
+      setShowPasswordPrompt(false);
+      setShowAdminPanel(true);
+      toast.success('Admin access granted');
+    } else {
+      toast.error('Invalid password');
+      setAdminPassword('');
     }
   };
 
@@ -192,7 +216,7 @@ export default function CloudSave({ equipmentList, customer, photos }: CloudSave
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setShowAdminPanel(!showAdminPanel)}
+              onClick={handleAdminPanelClick}
               className="ml-auto"
             >
               {showAdminPanel ? 'Hide' : 'Show'} Admin Panel
@@ -219,9 +243,9 @@ export default function CloudSave({ equipmentList, customer, photos }: CloudSave
                 <h4 className="font-medium text-sm">Saved Projects ({projects.length})</h4>
                 <div className="max-h-60 overflow-y-auto space-y-2">
                   {projects.map((project) => (
-                    <div key={project.id} className="p-3 border rounded-lg bg-gray-50">
+                    <div key={project.id} className="p-3 border rounded-lg bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors">
                       <div className="flex items-start justify-between">
-                        <div className="flex-1">
+                        <div className="flex-1" onClick={() => setSelectedProject(project)}>
                           <h5 className="font-medium text-sm">{project.projectName}</h5>
                           <p className="text-xs text-gray-600 mt-1">
                             Customer: {project.customer?.name || 'N/A'} | 
@@ -245,6 +269,127 @@ export default function CloudSave({ equipmentList, customer, photos }: CloudSave
           </CardContent>
         )}
       </Card>
+
+      {/* Password Prompt Dialog */}
+      {showPasswordPrompt && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <Card className="max-w-md w-full">
+            <CardHeader>
+              <CardTitle className="text-center">Admin Access Required</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">Enter Admin Password</label>
+                <Input
+                  type="password"
+                  value={adminPassword}
+                  onChange={(e) => setAdminPassword(e.target.value)}
+                  placeholder="Enter password"
+                  className="mt-1"
+                  onKeyPress={(e) => e.key === 'Enter' && handlePasswordSubmit()}
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  onClick={handlePasswordSubmit}
+                  className="flex-1"
+                  disabled={!adminPassword.trim()}
+                >
+                  Access Admin Panel
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowPasswordPrompt(false);
+                    setAdminPassword('');
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Project Detail Modal */}
+      {selectedProject && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <Card className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>{selectedProject.projectName}</CardTitle>
+              <Button
+                variant="outline"
+                onClick={() => setSelectedProject(null)}
+              >
+                Close
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Customer Info */}
+              <div>
+                <h4 className="font-semibold mb-2">Customer Information</h4>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div><strong>Name:</strong> {selectedProject.customer?.name || 'N/A'}</div>
+                  <div><strong>Location:</strong> {selectedProject.customer?.location || 'N/A'}</div>
+                  <div><strong>Contact:</strong> {selectedProject.customer?.contact || 'N/A'}</div>
+                  <div><strong>Phone:</strong> {selectedProject.customer?.phone || 'N/A'}</div>
+                  <div><strong>Email:</strong> {selectedProject.customer?.email || 'N/A'}</div>
+                </div>
+              </div>
+
+              {/* Equipment List */}
+              <div>
+                <h4 className="font-semibold mb-2">Equipment List ({selectedProject.totalEquipment || 0} items)</h4>
+                <div className="max-h-60 overflow-y-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left p-2">Qty</th>
+                        <th className="text-left p-2">Type</th>
+                        <th className="text-left p-2">Manufacturer</th>
+                        <th className="text-left p-2">Model</th>
+                        <th className="text-left p-2">Serial</th>
+                        <th className="text-left p-2">Notes</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedProject.equipmentList?.map((equipment: any, index: number) => (
+                        <tr key={index} className="border-b">
+                          <td className="p-2">{equipment.qty || 1}</td>
+                          <td className="p-2">{equipment.assetType || 'N/A'}</td>
+                          <td className="p-2">{equipment.manufacturer || 'N/A'}</td>
+                          <td className="p-2">{equipment.model || 'N/A'}</td>
+                          <td className="p-2">{equipment.serialNumber || 'N/A'}</td>
+                          <td className="p-2 text-xs max-w-xs truncate">{equipment.notes || 'N/A'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Photos */}
+              {selectedProject.photoUrls && selectedProject.photoUrls.length > 0 && (
+                <div>
+                  <h4 className="font-semibold mb-2">Photos ({selectedProject.photoCount || 0})</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {selectedProject.photoUrls.map((url: string, index: number) => (
+                      <div key={index} className="relative">
+                        <img
+                          src={url}
+                          alt={`Project photo ${index + 1}`}
+                          className="w-full h-32 object-cover rounded-lg"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
