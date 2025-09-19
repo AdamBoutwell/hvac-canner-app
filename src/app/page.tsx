@@ -18,11 +18,13 @@ import { NewProjectDialog } from "@/components/NewProjectDialog/NewProjectDialog
 import CloudSave from "@/components/CloudSave/CloudSave";
 import { getProjectInfo, clearProjectData, saveProjectData } from "@/lib/data-persistence";
 import { LoadingIndicator, ImageProcessingOverlay } from "@/components/ui/loading-indicator";
+import { ChevronDown, ChevronRight, Info, Upload, Camera, FileText, Download, Cloud } from "lucide-react";
 
 export default function Home() {
   const { setState, ...appState } = useAppContext();
   const [showNewProjectDialog, setShowNewProjectDialog] = React.useState(false);
   const [lastSaved, setLastSaved] = React.useState<string | null>(null);
+  const [showInstructions, setShowInstructions] = React.useState(false);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -416,6 +418,95 @@ export default function Home() {
           </div>
         </div>
       </header>
+
+      {/* Instructions Section */}
+      <div className="px-4 py-2">
+        <Card className="border-blue-200 bg-blue-50">
+          <CardHeader 
+            className="pb-2 cursor-pointer hover:bg-blue-100 transition-colors"
+            onClick={() => setShowInstructions(!showInstructions)}
+          >
+            <CardTitle className="text-sm flex items-center gap-2 text-blue-800">
+              <Info className="h-4 w-4" />
+              How to Use This App
+              {showInstructions ? (
+                <ChevronDown className="h-4 w-4 ml-auto" />
+              ) : (
+                <ChevronRight className="h-4 w-4 ml-auto" />
+              )}
+            </CardTitle>
+          </CardHeader>
+          {showInstructions && (
+            <CardContent className="pt-0">
+              <div className="grid md:grid-cols-2 gap-6 text-sm">
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3">
+                    <div className="bg-blue-100 p-2 rounded-full">
+                      <Camera className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-blue-800">Step 1: Enter Customer Info</h4>
+                      <p className="text-gray-600">Fill in the customer name and location at the top of the page. This creates your project.</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-3">
+                    <div className="bg-green-100 p-2 rounded-full">
+                      <Upload className="h-4 w-4 text-green-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-green-800">Step 2: Upload Photos</h4>
+                      <p className="text-gray-600">Click "Choose Files" and select photos of HVAC equipment nameplates. You can upload multiple photos at once.</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-3">
+                    <div className="bg-purple-100 p-2 rounded-full">
+                      <FileText className="h-4 w-4 text-purple-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-purple-800">Step 3: Review & Edit Data</h4>
+                      <p className="text-gray-600">The AI will extract equipment information from your photos. Review and edit the data in the form on the right.</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3">
+                    <div className="bg-orange-100 p-2 rounded-full">
+                      <Cloud className="h-4 w-4 text-orange-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-orange-800">Step 4: Auto-Save</h4>
+                      <p className="text-gray-600">Your project automatically saves to the cloud as you add equipment. No manual saving needed!</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-3">
+                    <div className="bg-red-100 p-2 rounded-full">
+                      <Download className="h-4 w-4 text-red-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-red-800">Step 5: Export Data</h4>
+                      <p className="text-gray-600">Download your equipment list as Excel or CSV files using the export buttons at the bottom.</p>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-gray-100 p-3 rounded-lg">
+                    <h4 className="font-semibold text-gray-800 mb-2">💡 Tips:</h4>
+                    <ul className="text-gray-600 space-y-1 text-xs">
+                      <li>• Take clear, well-lit photos of equipment nameplates</li>
+                      <li>• Use navigation arrows to review multiple photos</li>
+                      <li>• All data is automatically saved to the cloud</li>
+                      <li>• Projects are organized by customer name and location</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          )}
+        </Card>
+      </div>
 
       <main className="flex-1 p-4 grid md:grid-cols-2 gap-4">
         <div className="flex flex-col space-y-4">
