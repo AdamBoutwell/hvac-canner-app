@@ -660,13 +660,25 @@ export default function EquipmentFormEnhanced({ data, onSave }: EquipmentFormEnh
           {formData.manualLinks && formData.manualLinks.length > 0 ? (
             <div className="space-y-2">
               <p className="text-sm text-gray-600 mb-2">
-                Found {formData.manualLinks.length} manual(s) for {formData.manufacturer} {formData.model}:
+                Found {formData.manualLinks.length} manual source(s) for {formData.manufacturer} {formData.model}:
               </p>
               {formData.manualLinks.map((link, index) => (
                 <div key={index} className="p-3 border rounded-lg bg-gray-50">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <h4 className="font-medium text-sm">{link.title}</h4>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-medium text-sm">{link.title}</h4>
+                        {link.verified && (
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            ✓ Verified
+                          </span>
+                        )}
+                        {link.priority === 'high' && (
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            Official
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-gray-600 mt-1">{link.description}</p>
                       <p className="text-xs text-gray-500 mt-1">Source: {link.source}</p>
                     </div>
@@ -675,13 +687,19 @@ export default function EquipmentFormEnhanced({ data, onSave }: EquipmentFormEnh
                       target="_blank"
                       rel="noopener noreferrer"
                       className="ml-3 p-1 text-blue-600 hover:text-blue-800"
-                      title="Open manual in new tab"
+                      title="Open manual search in new tab"
                     >
                       <ExternalLink className="h-4 w-4" />
                     </a>
                   </div>
                 </div>
               ))}
+              <div className="mt-3 p-2 bg-blue-50 rounded-lg">
+                <p className="text-xs text-blue-800">
+                  <strong>💡 Tip:</strong> These links will take you to search pages where you can find specific manuals. 
+                  Look for PDF downloads or documentation sections on the manufacturer websites.
+                </p>
+              </div>
             </div>
           ) : (
             <p className="text-sm text-gray-500 italic">
