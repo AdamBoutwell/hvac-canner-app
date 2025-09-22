@@ -37,12 +37,12 @@ export default function CloudSave({ equipmentList, customer, photos }: CloudSave
   // Auto-save functionality
   useEffect(() => {
     const autoSave = async () => {
-      if (!state?.isCustomerValidated || equipmentList.length === 0) {
+      if (!state?.isCustomerValidated) {
         return;
       }
 
-      // Only auto-save if we have equipment and customer data
-      if (equipmentList.length > 0 && customer.name && customer.location) {
+      // Auto-save if we have customer data AND either equipment or photos
+      if (customer.name && customer.location && (equipmentList.length > 0 || photos.length > 0)) {
         setIsAutoSaving(true);
         try {
           await saveProjectToCloud();
@@ -57,7 +57,7 @@ export default function CloudSave({ equipmentList, customer, photos }: CloudSave
     // Debounce auto-save to avoid too frequent saves
     const timeoutId = setTimeout(autoSave, 2000);
     return () => clearTimeout(timeoutId);
-  }, [equipmentList, customer, state?.isCustomerValidated]);
+  }, [equipmentList, customer, photos, state?.isCustomerValidated]);
 
   const saveProjectToCloud = async () => {
     if (!customer.name || !customer.location) {
@@ -165,13 +165,21 @@ export default function CloudSave({ equipmentList, customer, photos }: CloudSave
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return 'Date unavailable';
+      }
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      return 'Date unavailable';
+    }
   };
 
   return (
@@ -198,10 +206,16 @@ export default function CloudSave({ equipmentList, customer, photos }: CloudSave
         </CardHeader>
         <CardContent>
           <div className="text-sm text-gray-600">
-            <p>Projects are automatically saved to the cloud as you add equipment.</p>
+            <p>Projects are automatically saved to the cloud as you add equipment or upload photos.</p>
             <p className="mt-1">Project Name: <strong>{customer.name} - {customer.location}</strong></p>
             {equipmentList.length > 0 && (
               <p className="mt-1">Equipment Items: <strong>{equipmentList.length}</strong></p>
+            )}
+            {photos.length > 0 && (
+              <p className="mt-1">Photos Uploaded: <strong>{photos.length}</strong></p>
+            )}
+            {equipmentList.length === 0 && photos.length === 0 && (
+              <p className="mt-1 text-gray-500">No equipment or photos yet</p>
             )}
           </div>
         </CardContent>
