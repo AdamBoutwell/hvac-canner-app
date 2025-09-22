@@ -37,12 +37,21 @@ export default function CloudSave({ equipmentList, customer, photos }: CloudSave
   // Auto-save functionality
   useEffect(() => {
     const autoSave = async () => {
+      console.log('CloudSave: Auto-save check triggered');
+      console.log('CloudSave: isCustomerValidated:', state?.isCustomerValidated);
+      console.log('CloudSave: customer.name:', customer.name);
+      console.log('CloudSave: customer.location:', customer.location);
+      console.log('CloudSave: equipmentList.length:', equipmentList.length);
+      console.log('CloudSave: photos.length:', photos.length);
+      
       if (!state?.isCustomerValidated) {
+        console.log('CloudSave: Auto-save skipped - customer not validated');
         return;
       }
 
       // Auto-save if we have customer data AND either equipment or photos
       if (customer.name && customer.location && (equipmentList.length > 0 || photos.length > 0)) {
+        console.log('CloudSave: Auto-save conditions met, triggering save');
         setIsAutoSaving(true);
         try {
           await saveProjectToCloud();
@@ -51,6 +60,8 @@ export default function CloudSave({ equipmentList, customer, photos }: CloudSave
         } finally {
           setIsAutoSaving(false);
         }
+      } else {
+        console.log('CloudSave: Auto-save skipped - conditions not met');
       }
     };
 
@@ -61,10 +72,14 @@ export default function CloudSave({ equipmentList, customer, photos }: CloudSave
 
   const saveProjectToCloud = async () => {
     if (!customer.name || !customer.location) {
+      console.log('CloudSave: Cannot save - missing customer name or location');
       return;
     }
 
     const projectName = `${customer.name} - ${customer.location}`;
+    console.log('CloudSave: Starting cloud save for project:', projectName);
+    console.log('CloudSave: Equipment count:', equipmentList.length);
+    console.log('CloudSave: Photos count:', photos.length);
     
     try {
       // Convert photos to base64
@@ -94,6 +109,7 @@ export default function CloudSave({ equipmentList, customer, photos }: CloudSave
         })
       );
 
+      console.log('CloudSave: Sending request to /api/projects');
       const response = await fetch('/api/projects', {
         method: 'POST',
         headers: {
@@ -107,11 +123,15 @@ export default function CloudSave({ equipmentList, customer, photos }: CloudSave
         }),
       });
 
+      console.log('CloudSave: Response status:', response.status);
       if (!response.ok) {
-        throw new Error('Failed to save project');
+        const errorText = await response.text();
+        console.error('CloudSave: API error:', errorText);
+        throw new Error(`Failed to save project: ${response.status}`);
       }
 
       const result = await response.json();
+      console.log('CloudSave: Success response:', result);
       setLastAutoSaved(new Date().toLocaleString());
       
       // Only show toast for manual saves, not auto-saves
@@ -120,7 +140,7 @@ export default function CloudSave({ equipmentList, customer, photos }: CloudSave
       }
 
     } catch (error) {
-      console.error('Error saving project:', error);
+      console.error('CloudSave: Error saving project:', error);
       if (!isAutoSaving) {
         toast.error('Failed to save project to cloud storage');
       }
