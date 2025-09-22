@@ -22,7 +22,7 @@ interface CloudSaveProps {
 }
 
 export default function CloudSave({ equipmentList, customer, photos }: CloudSaveProps) {
-  const { state } = useAppContext();
+  const { state, setState } = useAppContext();
   const [isSaving, setIsSaving] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [projects, setProjects] = useState<any[]>([]);
@@ -39,13 +39,15 @@ export default function CloudSave({ equipmentList, customer, photos }: CloudSave
     equipmentListLength: equipmentList.length,
     customer: customer,
     photosLength: photos.length,
-    photos: photos
+    photos: photos,
+    stateFromContext: state
   });
 
   // Auto-save functionality
   useEffect(() => {
     const autoSave = async () => {
       console.log('CloudSave: Auto-save check triggered');
+      console.log('CloudSave: Full state object:', state);
       console.log('CloudSave: isCustomerValidated:', state?.isCustomerValidated);
       console.log('CloudSave: customer.name:', customer.name);
       console.log('CloudSave: customer.location:', customer.location);
@@ -54,6 +56,7 @@ export default function CloudSave({ equipmentList, customer, photos }: CloudSave
       
       if (!state?.isCustomerValidated) {
         console.log('CloudSave: Auto-save skipped - customer not validated');
+        console.log('CloudSave: State object keys:', Object.keys(state || {}));
         return;
       }
 
