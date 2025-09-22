@@ -34,6 +34,14 @@ export default function CloudSave({ equipmentList, customer, photos }: CloudSave
   const [lastAutoSaved, setLastAutoSaved] = useState<string | null>(null);
   const [isAutoSaving, setIsAutoSaving] = useState(false);
 
+  // Debug logging for props
+  console.log('CloudSave: Component rendered with props:', {
+    equipmentListLength: equipmentList.length,
+    customer: customer,
+    photosLength: photos.length,
+    photos: photos
+  });
+
   // Auto-save functionality
   useEffect(() => {
     const autoSave = async () => {

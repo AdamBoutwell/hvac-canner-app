@@ -608,13 +608,17 @@ export default function Home() {
             <CloudSave 
               equipmentList={appState.equipmentList}
               customer={appState.customer}
-              photos={appState.imageQueue.map((file, index) => ({
-                id: `photo_${index}`,
-                name: file.name,
-                data: '', // Will be converted to base64 when saving
-                equipmentId: appState.extractedData[index]?.id,
-                file: file // Pass the actual File object
-              }))}
+              photos={appState.imageQueue.map((file, index) => {
+                const photoData = {
+                  id: `photo_${index}`,
+                  name: file.name,
+                  data: '', // Will be converted to base64 when saving
+                  equipmentId: appState.extractedData[index]?.id,
+                  file: file // Pass the actual File object
+                };
+                console.log('Page: Passing photo to CloudSave:', photoData);
+                return photoData;
+              })}
             />
           </div>
         </div>
